@@ -11,11 +11,17 @@ import musicLibrary
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
 
+# Flag to check if Jarvis is processing a command
+processing = False
+
 def speak(text):
     engine.say(text)
     engine.runAndWait()
 
 def processCommand(c):
+    global processing  # Access the global flag
+    processing = True  # Start processing the command
+
     # Show a message to indicate processing
     print("Processing...")
 
@@ -74,6 +80,8 @@ def processCommand(c):
     else:
         speak("Sorry, I didn't understand the command.")
 
+    processing = False  # Command has been processed
+
 # Function to get weather information
 def get_weather(city):
     try:
@@ -87,27 +95,29 @@ def get_weather(city):
 if __name__ == "__main__":
     speak("Initializing Jarvis... ")
     while True:
-        # Listen for the wake word "Jarvis"
-        print("Recognizing... Please say 'Jarvis' to activate.")
-        try:
-            with sr.Microphone() as source:
-                recognizer.adjust_for_ambient_noise(source)  # Adjust for background noise
-                print("Listening...")
-                audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
-            word = recognizer.recognize_google(audio)
-            if word.lower() == "jarvis":
-                speak("Yeah, what can I do for you?")
-                print("Jarvis is ready, listening for your command...")
-                # Listen for command
+        if not processing:  # Only listen when not processing a command
+            print("Recognizing... Please say 'Jarvis' to activate.")
+            try:
                 with sr.Microphone() as source:
-                    recognizer.adjust_for_ambient_noise(source)
-                    audio = recognizer.listen(source)
-                    print("Processing command... Please wait.")
-                    command = recognizer.recognize_google(audio)
-                    processCommand(command)
-        except sr.UnknownValueError:
-            speak("Sorry, I didn't catch that. Please try again.")
-        except sr.RequestError as e:
-            speak(f"Could not request results from Google Speech Recognition service; {e}")
-        except Exception as e:
-            print(f"Error: {e}")
+                    recognizer.adjust_for_ambient_noise(source)  # Adjust for background noise
+                    print("Listening...")
+                    audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
+                word = recognizer.recognize_google(audio)
+                if word.lower() == "jarvis":
+                    speak("Yeah, what can I do for you?")
+                    print("Jarvis is ready, listening for your command...")
+                    # Listen for command
+                    with sr.Microphone() as source:
+                        recognizer.adjust_for_ambient_noise(source)
+                        audio = recognizer.listen(source)
+                        print("Processing command... Please wait.")
+                        command = recognizer.recognize_google(audio)
+                        processCommand(command)
+            except sr.UnknownValueError:
+                # Instead of speaking during processing, print this message for debugging.
+                if not processing:
+                    print("Sorry, I didn't catch that. Please try again.")
+            except sr.RequestError as e:
+                speak(f"Could not request results from Google Speech Recognition service; {e}")
+            except Exception as e:
+                print(f"Error: {e}")
