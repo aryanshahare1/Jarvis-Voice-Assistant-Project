@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 import wikipedia
 import subprocess
+import musicLibrary
 
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
@@ -63,6 +64,13 @@ def processCommand(c):
         webbrowser.open("https://instagram.com")
     elif "open linkedin" in c.lower():
         webbrowser.open("https://linkedin.com")
+    elif c.lower().startswith("play"):
+        song = c.lower().split(" ")[1]
+        if song in musicLibrary.music:
+            link = musicLibrary.music[song]
+            webbrowser.open(link)
+        else:
+            speak(f"Sorry, I couldn't find the song {song}.")
     else:
         speak("Sorry, I didn't understand the command.")
 
